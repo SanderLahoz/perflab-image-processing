@@ -24,6 +24,15 @@ student_t student = {
  *****************************************************************************/
 
 // Your different versions of the rotate kernel go here
+char my_rotate_descr[] = "single_loop_rotate: No nested loops";
+void my_rotate(int dim, pixel *src, pixel *dst)
+{
+    int k, i, j;
+    int iterations = dim * dim;
+    for (k = 0; k < iterations; k++)
+    {
+    }
+}
 
 /*
  * naive_rotate - The naive baseline version of rotate
@@ -64,6 +73,7 @@ void register_rotate_functions()
 {
     add_rotate_function(&rotate, rotate_descr);
     /* ... Register additional test functions here */
+    add_rotate_function(&my_rotate, my_rotate_descr);
 }
 
 /******************************************************************************
