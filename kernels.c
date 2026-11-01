@@ -54,6 +54,23 @@ void my_rotate_v2(int dim, pixel *src, pixel *dst)
     }
 }
 
+char my_rotate_descr_v3[] = "inter_changed_loops: changing the loop order (dst stride 1)";
+void my_rotate_v3(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+    for (j = 0; j < dim; j++)
+    {
+        pixel *d = dst + (dim - 1 - j) * dim;
+        pixel *s = src + j;
+        for (i = 0; i < dim; i++)
+        {
+            *d = *s;
+            d++;
+            s += dim;
+        }
+    }
+}
+
 /*
  * naive_rotate - The naive baseline version of rotate
  */
@@ -95,6 +112,7 @@ void register_rotate_functions()
     /* ... Register additional test functions here */
     add_rotate_function(&my_rotate, my_rotate_descr);
     add_rotate_function(&my_rotate_v2, my_rotate_descr_v2);
+    add_rotate_function(&my_rotate_v3, my_rotate_descr_v3);
 }
 
 /******************************************************************************
