@@ -71,6 +71,18 @@ void my_rotate_v3(int dim, pixel *src, pixel *dst)
     }
 }
 
+#define B 32
+char my_rotate_descr_v4[] = "cache_blocking: BxB cache blocking";
+void my_rotate_v4(int dim, pixel *src, pixel *dst)
+{
+    int ii, jj, i, j;
+    for (ii = 0; ii < dim; ii += B)
+        for (jj = 0; jj < dim; jj += B)
+            for (i = ii; i < ii + B; i++)
+                for (j = jj; j < jj + B; j++)
+                    dst[RIDX(dim - 1 - j, i, dim)] = src[RIDX(i, j, dim)];
+}
+
 /*
  * naive_rotate - The naive baseline version of rotate
  */
@@ -113,6 +125,7 @@ void register_rotate_functions()
     add_rotate_function(&my_rotate, my_rotate_descr);
     add_rotate_function(&my_rotate_v2, my_rotate_descr_v2);
     add_rotate_function(&my_rotate_v3, my_rotate_descr_v3);
+    add_rotate_function(&my_rotate_v4, my_rotate_descr_v4);
 }
 
 /******************************************************************************
