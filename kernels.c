@@ -37,6 +37,22 @@ void my_rotate(int dim, pixel *src, pixel *dst)
     }
 }
 
+char my_rotate_descr_v2[] = "less_multiplication: remove multiplication in inner loop";
+void my_rotate_v2(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+    for (i = 0; i < dim; i++)
+    {
+        pixel *s = src + i * dim;
+        pixel *d = dst + (dim - 1) * dim + i;
+        for (j = 0; j < dim; j++)
+        {
+            *d = *s;
+            s++;
+            d -= dim;
+        }
+    }
+}
 /*
  * naive_rotate - The naive baseline version of rotate
  */
