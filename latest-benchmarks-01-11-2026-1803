@@ -1,0 +1,105 @@
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -o rotate
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Benchmarking rotate...
+Rotate, version "rotate: Current working version":
+Dim             64      128     256     512     Mean
+Your CPEs       7.3     7.3     8.0     8.3
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         1.0     2.0     2.2     5.3     2.2
+
+Rotate, version "single_loop_rotate: No nested loops":
+Dim             64      128     256     512     Mean
+Your CPEs       8.5     8.7     9.1     10.1
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         0.8     1.7     2.0     4.4     1.9
+
+Rotate, version "less_multiplication: remove multiplication in inner loop":
+Dim             64      128     256     512     Mean
+Your CPEs       4.0     4.7     3.9     6.3
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         1.7     3.1     4.6     7.0     3.6
+
+Rotate, version "inter_changed_loops: changing the loop order (dst stride 1)":
+Dim             64      128     256     512     Mean
+Your CPEs       3.2     3.4     3.7     5.9
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         2.2     4.2     4.8     7.5     4.3
+
+Rotate, version "cache_blocking: BxB cache blocking":
+Dim             64      128     256     512     Mean
+Your CPEs       7.5     7.0     7.0     14.2
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         0.9     2.1     2.5     3.1     2.0
+
+Rotate, version "blocking_optimized: cache blocking + pointer walking":
+Dim             64      128     256     512     Mean
+Your CPEs       3.4     5.1     8.1     10.6
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         2.0     2.8     2.2     4.2     2.7
+
+Rotate, version "unrolling_8_times: blocking + pointers + 8x unrolling":
+Dim             64      128     256     512     Mean
+Your CPEs       1.9     2.8     7.4     11.6
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         3.7     5.3     2.4     3.8     3.7
+
+Summary of Your Best Scores:
+  Rotate:   4.3 (inter_changed_loops: changing the loop order (dst stride 1))
+
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -l -o rotate
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Large images; this will take a while (esp. if you benchmark many functions).
+
+Benchmarking rotate...
+Rotate, version "rotate: Current working version":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       17.4    36.2    36.7    40.3
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         2.5     3.3     8.0     7.6     4.8
+
+Rotate, version "single_loop_rotate: No nested loops":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       21.7    46.2    47.8    51.4
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         2.0     2.6     6.1     6.0     3.7
+
+Rotate, version "less_multiplication: remove multiplication in inner loop":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       19.5    45.2    46.3    50.2
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         2.3     2.7     6.3     6.1     3.9
+
+Rotate, version "inter_changed_loops: changing the loop order (dst stride 1)":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       22.5    31.7    33.1    38.0
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         2.0     3.8     8.9     8.1     4.8
+
+Rotate, version "cache_blocking: BxB cache blocking":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       14.2    12.4    13.2    15.3
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         3.1     9.7     22.2    20.0    10.7
+
+Rotate, version "blocking_optimized: cache blocking + pointer walking":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       11.4    11.8    12.4    13.8
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         3.9     10.2    23.7    22.2    12.0
+
+Rotate, version "unrolling_8_times: blocking + pointers + 8x unrolling":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       11.1    11.6    12.3    14.3
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         4.0     10.4    23.9    21.4    12.1
+
+Summary of Your Best Scores:
+  Rotate:   12.1 (unrolling_8_times: blocking + pointers + 8x unrolling)
+
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ 
