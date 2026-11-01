@@ -83,6 +83,31 @@ void my_rotate_v4(int dim, pixel *src, pixel *dst)
                     dst[RIDX(dim - 1 - j, i, dim)] = src[RIDX(i, j, dim)];
 }
 
+char my_rotate_descr_v5[] = "blocking_optimized: cache blocking + pointer walking";
+void my_rotate_v5(int dim, pixel *src, pixel *dst)
+{
+    int ii, jj, i, j;
+    for (ii = 0; ii < dim; ii += B)
+        for (jj = 0; jj < dim; jj += B)
+        {
+            pixel *s = src + ii * dim + jj;
+            pixel *d = dst + (dim - 1 - jj) * dim + ii;
+            for (i = 0; i < B; i++)
+            {
+                pixel *sp = s;
+                pixel *dp = d;
+                for (j = 0; j < B; j++)
+                {
+                    *dp = *sp;
+                    sp++;
+                    dp -= dim;
+                }
+                s += dim;
+                d++;
+            }
+        }
+}
+
 /*
  * naive_rotate - The naive baseline version of rotate
  */
@@ -126,6 +151,7 @@ void register_rotate_functions()
     add_rotate_function(&my_rotate_v2, my_rotate_descr_v2);
     add_rotate_function(&my_rotate_v3, my_rotate_descr_v3);
     add_rotate_function(&my_rotate_v4, my_rotate_descr_v4);
+    add_rotate_function(&my_rotate_v5, my_rotate_descr_v5);
 }
 
 /******************************************************************************
