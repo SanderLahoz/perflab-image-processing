@@ -108,6 +108,41 @@ void my_rotate_v5(int dim, pixel *src, pixel *dst)
         }
 }
 
+char my_rotate_descr_v6[] = "unrolling_8_times: blocking + pointers + 8x unrolling";
+void my_rotate_v6(int dim, pixel *src, pixel *dst)
+{
+    int ii, jj, i, j;
+    int d1 = dim, d2 = 2 * dim, d3 = 3 * dim, d4 = 4 * dim;
+    int d5 = 5 * dim, d6 = 6 * dim, d7 = 7 * dim, d8 = 8 * dim;
+
+    for (ii = 0; ii < dim; ii += B)
+        for (jj = 0; jj < dim; jj += B)
+        {
+            pixel *s = src + ii * dim + jj;
+            pixel *d = dst + (dim - 1 - jj) * dim + ii;
+            for (i = 0; i < B; i++)
+            {
+                pixel *sp = s;
+                pixel *dp = d;
+                for (j = 0; j < B; j += 8)
+                {
+                    dp[0] = sp[0];
+                    dp[-d1] = sp[1];
+                    dp[-d2] = sp[2];
+                    dp[-d3] = sp[3];
+                    dp[-d4] = sp[4];
+                    dp[-d5] = sp[5];
+                    dp[-d6] = sp[6];
+                    dp[-d7] = sp[7];
+                    sp += 8;
+                    dp -= d8;
+                }
+                s += dim;
+                d++;
+            }
+        }
+}
+
 /*
  * naive_rotate - The naive baseline version of rotate
  */
@@ -152,6 +187,7 @@ void register_rotate_functions()
     add_rotate_function(&my_rotate_v3, my_rotate_descr_v3);
     add_rotate_function(&my_rotate_v4, my_rotate_descr_v4);
     add_rotate_function(&my_rotate_v5, my_rotate_descr_v5);
+    add_rotate_function(&my_rotate_v6, my_rotate_descr_v6);
 }
 
 /******************************************************************************
