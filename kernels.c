@@ -197,6 +197,80 @@ void register_rotate_functions()
 // Your different versions of the rotate_t kernel go here
 // (i.e. rotate with multi-threading)
 
+#define NTHREADS 4 // Should match the amount of CPU cores.
+typedef struct
+{
+    int dim;
+    int row_start; /* inclusive, multiple of B */
+    int row_end;   /* exclusive, multiple of B */
+    pixel *src;
+    pixel *dst;
+} rot_args_t;
+
+static void *rotate_worker(void *arg)
+{
+    rot_args_t *a = (rot_args_t *)arg;
+    int dim = a->dim;
+    pixel *src = a->src, *dst = a->dst;
+    int ii, jj, i, j;
+    int d1 = dim, d2 = 2 * dim, d3 = 3 * dim, d4 = 4 * dim;
+    int d5 = 5 * dim, d6 = 6 * dim, d7 = 7 * dim, d8 = 8 * dim;
+
+    for (ii = a->row_start; ii < a->row_end; ii += B)
+        for (jj = 0; jj < dim; jj += B)
+        {
+            pixel *s = src + ii * dim + jj;
+            pixel *d = dst + (dim - 1 - jj) * dim + ii;
+            for (i = 0; i < B; i++)
+            {
+                pixel *sp = s;
+                pixel *dp = d;
+                for (j = 0; j < B; j += 8)
+                {
+                    dp[0] = sp[0];
+                    dp[-d1] = sp[1];
+                    dp[-d2] = sp[2];
+                    dp[-d3] = sp[3];
+                    dp[-d4] = sp[4];
+                    dp[-d5] = sp[5];
+                    dp[-d6] = sp[6];
+                    dp[-d7] = sp[7];
+                    sp += 8;
+                    dp -= d8;
+                }
+                s += dim;
+                d++;
+            }
+        }
+    return NULL;
+}
+
+char my_rotate_t_descr[] = "rotate_t: pthreads, row-range split, blocked + unrolled";
+void my_rotate_t(int dim, pixel *src, pixel *dst)
+{
+    pthread_t tid[NTHREADS];
+    rot_args_t args[NTHREADS];
+    int t;
+    int blocks = dim / B; /* number of B-row bands */
+    int per = blocks / NTHREADS;
+    int extra = blocks % NTHREADS;
+    int band = 0;
+
+    for (t = 0; t < NTHREADS; t++)
+    {
+        int n = per + (t < extra ? 1 : 0);
+        args[t].dim = dim;
+        args[t].src = src;
+        args[t].dst = dst;
+        args[t].row_start = band * B;
+        args[t].row_end = (band + n) * B;
+        band += n;
+        pthread_create(&tid[t], NULL, rotate_worker, &args[t]);
+    }
+    for (t = 0; t < NTHREADS; t++)
+        pthread_join(tid[t], NULL);
+}
+
 /*
  * rotate_t - Your current working version of rotate_t
  * IMPORTANT: This is the version you will be graded on
@@ -219,6 +293,7 @@ void register_rotate_t_functions()
 {
     add_rotate_t_function(&rotate_t, rotate_t_descr);
     /* ... Register additional test functions here */
+    add_rotate_t_function(&my_rotate_t, my_rotate_t_descr);
 }
 
 /******************************************************************************
