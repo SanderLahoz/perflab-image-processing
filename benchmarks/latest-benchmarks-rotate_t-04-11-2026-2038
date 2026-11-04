@@ -1,0 +1,33 @@
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -o rotate_t
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Benchmarking rotate_t...
+Rotate_T, version "rotate_t: Current working version":
+Dim             64      128     256     512     Mean
+Your CPEs       7.0     7.1     7.2     7.9
+Baseline CPEs   7.0     14.6    17.8    44.2
+Speedup         1.0     2.0     2.5     5.6     2.3
+
+Summary of Your Best Scores:
+  Rotate_T: 2.3 (rotate_t: Current working version)
+
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -l -o rotate_t
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Large images; this will take a while (esp. if you benchmark many functions).
+
+Benchmarking rotate_t...
+Rotate_T, version "rotate_t: Current working version":
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       14.7    35.3    36.9    40.5
+Baseline CPEs   44.2    120.0   293.5   306.8
+Speedup         3.0     3.4     8.0     7.6     5.0
+
+Summary of Your Best Scores:
+  Rotate_T: 5.0 (rotate_t: Current working version)
+
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ 
