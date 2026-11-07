@@ -564,6 +564,45 @@ void register_smooth_functions()
 // Your different versions of the smooth_n kernel go here
 // (i.e. where anything goes, including multithreading and SIMD).
 
+#define SM_THREADS 4 // Number of cores
+
+typedef struct
+{
+    int dim, start, end;
+    pixel *src, *dst;
+} smooth_args_t;
+
+static void *smooth_worker(void *p)
+{
+    smooth_args_t *a = (smooth_args_t *)p;
+    vsum_t *vs = malloc(a->dim * sizeof(vsum_t));
+    smooth_rows(a->dim, a->src, a->dst, a->start, a->end, vs);
+    free(vs);
+    return NULL;
+}
+
+char my_smooth_n_descr[] = "split_by_row: split over pthreads by row bands";
+void my_smooth_n(int dim, pixel *src, pixel *dst)
+{
+    pthread_t tid[SM_THREADS];
+    smooth_args_t args[SM_THREADS];
+    int t, per = dim / SM_THREADS, extra = dim % SM_THREADS, row = 0;
+
+    for (t = 0; t < SM_THREADS; t++)
+    {
+        int n = per + (t < extra ? 1 : 0);
+        args[t].dim = dim;
+        args[t].src = src;
+        args[t].dst = dst;
+        args[t].start = row;
+        args[t].end = row + n;
+        row += n;
+        pthread_create(&tid[t], NULL, smooth_worker, &args[t]);
+    }
+    for (t = 0; t < SM_THREADS; t++)
+        pthread_join(tid[t], NULL);
+}
+
 char smooth_n_descr[] = "smooth_n: Current working version";
 void smooth_n(int dim, pixel *src, pixel *dst)
 {
@@ -579,6 +618,7 @@ void register_smooth_n_functions()
 {
     add_smooth_n_function(&smooth_n, smooth_n_descr);
     /* ... Register additional test functions here */
+    add_smooth_n_function(&my_smooth_n, my_smooth_n_descr);
 }
 
 /******************************************************************************
