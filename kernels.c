@@ -360,6 +360,33 @@ void register_rotate_t_functions()
  *****************************************************************************/
 
 // Your different versions of the smooth kernel go here
+char my_smooth_descr[] = "local_accumulators: avg inlined by hand";
+void my_smooth(int dim, pixel *src, pixel *dst)
+{
+    int i, j, ii, jj;
+    for (i = 0; i < dim; i++)
+        for (j = 0; j < dim; j++)
+        {
+            int r0 = i > 0 ? i - 1 : 0, r1 = i < dim - 1 ? i + 1 : dim - 1;
+            int c0 = j > 0 ? j - 1 : 0, c1 = j < dim - 1 ? j + 1 : dim - 1;
+            int sr = 0, sg = 0, sb = 0, sa = 0;
+            for (ii = r0; ii <= r1; ii++)
+                for (jj = c0; jj <= c1; jj++)
+                {
+                    pixel *p = &src[RIDX(ii, jj, dim)];
+                    sr += p->red;
+                    sg += p->green;
+                    sb += p->blue;
+                    sa += p->alpha;
+                }
+            int n = (r1 - r0 + 1) * (c1 - c0 + 1);
+            pixel *o = &dst[RIDX(i, j, dim)];
+            o->red = sr / n;
+            o->green = sg / n;
+            o->blue = sb / n;
+            o->alpha = sa / n;
+        }
+}
 
 /*
  * naive_smooth - The naive baseline version of smooth
@@ -390,6 +417,7 @@ void register_smooth_functions()
 {
     add_smooth_function(&smooth, smooth_descr);
     /* ... Register additional test functions here */
+    add_smooth_function(&my_smooth, my_smooth_descr);
 }
 
 /******************************************************************************
