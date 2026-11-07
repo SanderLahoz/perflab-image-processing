@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <limits.h>
 #include "defs.h"
 #include "smooth.h" // helper functions for naive_smooth
 #include "blend.h"  // helper functions for naive_blend
@@ -636,6 +637,24 @@ void register_smooth_n_functions()
  *****************************************************************************/
 
 // Your different versions of the blend kernel go here.
+char my_blend_descr[] = "blend_pixel: inlined, bgc hoisted, float math kept";
+void my_blend(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+    float br = bgc.red, bg = bgc.green, bb = bgc.blue;
+    for (i = 0; i < dim; i++)
+        for (j = 0; j < dim; j++)
+        {
+            pixel *s = &src[RIDX(i, j, dim)];
+            pixel *d = &dst[RIDX(i, j, dim)];
+            float a = ((float)s->alpha) / USHRT_MAX;
+            float ia = 1 - a;
+            d->red = (a * s->red) + (ia * br);
+            d->green = (a * s->green) + (ia * bg);
+            d->blue = (a * s->blue) + (ia * bb);
+            d->alpha = USHRT_MAX;
+        }
+}
 
 char naive_blend_descr[] = "naive_blend: Naive baseline implementation";
 void naive_blend(int dim, pixel *src, pixel *dst) // reads global variable `pixel bgc`
@@ -662,6 +681,7 @@ void register_blend_functions()
 {
     add_blend_function(&blend, blend_descr);
     /* ... Register additional test functions here */
+    add_blend_function(&my_blend, my_blend_descr);
 }
 
 /******************************************************************************
