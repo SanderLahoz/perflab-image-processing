@@ -320,6 +320,15 @@ void my_rotate_t(int dim, pixel *src, pixel *dst)
         pthread_join(tid[t], NULL);
 }
 
+char rotate_t_descr_v2[] = "rotate_t: single-threaded buffered for N<1024, 4 threads for N>=1024";
+void my_rotate_t_v2(int dim, pixel *src, pixel *dst)
+{
+    if (dim < 1024)
+        rotate_buf(dim, src, dst);
+    else
+        my_rotate_t(dim, src, dst);
+}
+
 /*
  * rotate_t - Your current working version of rotate_t
  * IMPORTANT: This is the version you will be graded on
@@ -327,7 +336,7 @@ void my_rotate_t(int dim, pixel *src, pixel *dst)
 char rotate_t_descr[] = "rotate_t: Current working version";
 void rotate_t(int dim, pixel *src, pixel *dst)
 {
-    naive_rotate(dim, src, dst);
+    my_rotate_t_v2(dim, src, dst);
 }
 
 /*********************************************************************
@@ -343,7 +352,7 @@ void register_rotate_t_functions()
     add_rotate_t_function(&rotate_t, rotate_t_descr);
     /* ... Register additional test functions here */
     add_rotate_t_function(&my_rotate_t, my_rotate_t_descr);
-    add_rotate_t_function(&rotate_buf, rotate_buf_descr);
+    add_rotate_t_function(&my_rotate_t_v2, rotate_t_descr_v2);
 }
 
 /******************************************************************************
