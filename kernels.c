@@ -656,6 +656,24 @@ void my_blend(int dim, pixel *src, pixel *dst)
         }
 }
 
+char my_blend_descr_v2[] = "single_loop: pointer walking";
+void my_blend_v2(int dim, pixel *src, pixel *dst)
+{
+    float br = bgc.red, bg = bgc.green, bb = bgc.blue;
+    pixel *end = src + dim * dim;
+    while (src < end)
+    {
+        float a = ((float)src->alpha) / USHRT_MAX;
+        float ia = 1 - a;
+        dst->red = (a * src->red) + (ia * br);
+        dst->green = (a * src->green) + (ia * bg);
+        dst->blue = (a * src->blue) + (ia * bb);
+        dst->alpha = USHRT_MAX;
+        src++;
+        dst++;
+    }
+}
+
 char naive_blend_descr[] = "naive_blend: Naive baseline implementation";
 void naive_blend(int dim, pixel *src, pixel *dst) // reads global variable `pixel bgc`
 {
@@ -682,6 +700,7 @@ void register_blend_functions()
     add_blend_function(&blend, blend_descr);
     /* ... Register additional test functions here */
     add_blend_function(&my_blend, my_blend_descr);
+    add_blend_function(&my_blend_v2, my_blend_descr_v2);
 }
 
 /******************************************************************************
