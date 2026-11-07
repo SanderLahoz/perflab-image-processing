@@ -388,6 +388,62 @@ void my_smooth(int dim, pixel *src, pixel *dst)
         }
 }
 
+static inline void smooth_border_pixel(int dim, int i, int j, pixel *src, pixel *dst)
+{
+    int ii, jj;
+    int r0 = i > 0 ? i - 1 : 0, r1 = i < dim - 1 ? i + 1 : dim - 1;
+    int c0 = j > 0 ? j - 1 : 0, c1 = j < dim - 1 ? j + 1 : dim - 1;
+    int sr = 0, sg = 0, sb = 0, sa = 0;
+    for (ii = r0; ii <= r1; ii++)
+        for (jj = c0; jj <= c1; jj++)
+        {
+            pixel *p = &src[RIDX(ii, jj, dim)];
+            sr += p->red;
+            sg += p->green;
+            sb += p->blue;
+            sa += p->alpha;
+        }
+    int n = (r1 - r0 + 1) * (c1 - c0 + 1);
+    pixel *o = &dst[RIDX(i, j, dim)];
+    o->red = sr / n;
+    o->green = sg / n;
+    o->blue = sb / n;
+    o->alpha = sa / n;
+}
+
+#define S9(f) (a[0].f + a[1].f + a[2].f + b[0].f + b[1].f + b[2].f + c[0].f + c[1].f + c[2].f)
+
+char my_smooth_descr_v2[] = "interior_border_seperation: interior has a constant divisor 9";
+void my_smooth_v2(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+    for (j = 0; j < dim; j++)
+    {
+        smooth_border_pixel(dim, 0, j, src, dst);
+        smooth_border_pixel(dim, dim - 1, j, src, dst);
+    }
+    for (i = 1; i < dim - 1; i++)
+    {
+        smooth_border_pixel(dim, i, 0, src, dst);
+        smooth_border_pixel(dim, i, dim - 1, src, dst);
+        pixel *a = src + (i - 1) * dim; /* row above, column j-1 */
+        pixel *b = a + dim;
+        pixel *c = b + dim;
+        pixel *o = dst + i * dim + 1;
+        for (j = 1; j < dim - 1; j++)
+        {
+            o->red = S9(red) / 9;
+            o->green = S9(green) / 9;
+            o->blue = S9(blue) / 9;
+            o->alpha = S9(alpha) / 9;
+            a++;
+            b++;
+            c++;
+            o++;
+        }
+    }
+}
+
 /*
  * naive_smooth - The naive baseline version of smooth
  */
@@ -418,6 +474,7 @@ void register_smooth_functions()
     add_smooth_function(&smooth, smooth_descr);
     /* ... Register additional test functions here */
     add_smooth_function(&my_smooth, my_smooth_descr);
+    add_smooth_function(&my_smooth_v2, my_smooth_descr_v2);
 }
 
 /******************************************************************************
