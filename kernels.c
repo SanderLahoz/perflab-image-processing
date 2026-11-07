@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
 #include "defs.h"
 #include "smooth.h" // helper functions for naive_smooth
 #include "blend.h"  // helper functions for naive_blend
@@ -143,6 +145,52 @@ void my_rotate_v6(int dim, pixel *src, pixel *dst)
         }
 }
 
+#define TB 32
+
+/* Rotates the source row-bands [ii_start, ii_end). Each band is TB rows. */
+static void rotate_bands(int dim, pixel *src, pixel *dst, int ii_start, int ii_end)
+{
+    pixel buf[TB * TB]; /* buf[j*TB + i] = src(ii+i, jj+j) */
+    int ii, jj, i, j;
+
+    for (ii = ii_start; ii < ii_end; ii += TB)
+        for (jj = 0; jj < dim; jj += TB)
+        {
+            /* Phase 1: sequential reads from src, transpose into buf */
+            for (i = 0; i < TB; i++)
+            {
+                pixel *sp = src + (ii + i) * dim + jj;
+                pixel *bp = buf + i;
+                for (j = 0; j < TB; j += 8)
+                {
+                    bp[0 * TB] = sp[0];
+                    bp[1 * TB] = sp[1];
+                    bp[2 * TB] = sp[2];
+                    bp[3 * TB] = sp[3];
+                    bp[4 * TB] = sp[4];
+                    bp[5 * TB] = sp[5];
+                    bp[6 * TB] = sp[6];
+                    bp[7 * TB] = sp[7];
+                    sp += 8;
+                    bp += 8 * TB;
+                }
+            }
+            /* Phase 2: write whole 256-byte row segments to dst */
+            pixel *d = dst + (dim - 1 - jj) * dim + ii;
+            for (j = 0; j < TB; j++)
+            {
+                memcpy(d, buf + j * TB, TB * sizeof(pixel));
+                d -= dim;
+            }
+        }
+}
+
+char rotate_buf_descr[] = "rotate_buf: tile staged through contiguous buffer";
+void rotate_buf(int dim, pixel *src, pixel *dst)
+{
+    rotate_bands(dim, src, dst, 0, dim);
+}
+
 /*
  * naive_rotate - The naive baseline version of rotate
  */
@@ -170,7 +218,7 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
 char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst)
 {
-    naive_rotate(dim, src, dst);
+    rotate_buf(dim, src, dst);
 }
 
 /*
@@ -188,6 +236,7 @@ void register_rotate_functions()
     add_rotate_function(&my_rotate_v4, my_rotate_descr_v4);
     add_rotate_function(&my_rotate_v5, my_rotate_descr_v5);
     add_rotate_function(&my_rotate_v6, my_rotate_descr_v6);
+    add_rotate_function(&rotate_buf, rotate_buf_descr);
 }
 
 /******************************************************************************
@@ -294,6 +343,7 @@ void register_rotate_t_functions()
     add_rotate_t_function(&rotate_t, rotate_t_descr);
     /* ... Register additional test functions here */
     add_rotate_t_function(&my_rotate_t, my_rotate_t_descr);
+    add_rotate_t_function(&rotate_buf, rotate_buf_descr);
 }
 
 /******************************************************************************
