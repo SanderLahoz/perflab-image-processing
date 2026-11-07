@@ -674,6 +674,32 @@ void my_blend_v2(int dim, pixel *src, pixel *dst)
     }
 }
 
+#define BLEND_PX(k)                                    \
+    {                                                  \
+        float a = ((float)src[k].alpha) / USHRT_MAX;   \
+        float ia = 1 - a;                              \
+        dst[k].red = (a * src[k].red) + (ia * br);     \
+        dst[k].green = (a * src[k].green) + (ia * bg); \
+        dst[k].blue = (a * src[k].blue) + (ia * bb);   \
+        dst[k].alpha = USHRT_MAX;                      \
+    }
+
+char my_blend_descr_v3[] = "loop_unrolled: float math, 4x unrolled";
+void my_blend_v3(int dim, pixel *src, pixel *dst)
+{
+    float br = bgc.red, bg = bgc.green, bb = bgc.blue;
+    pixel *end = src + dim * dim;
+    while (src < end)
+    {
+        BLEND_PX(0)
+        BLEND_PX(1)
+        BLEND_PX(2)
+        BLEND_PX(3)
+        src += 4;
+        dst += 4;
+    }
+}
+
 char naive_blend_descr[] = "naive_blend: Naive baseline implementation";
 void naive_blend(int dim, pixel *src, pixel *dst) // reads global variable `pixel bgc`
 {
@@ -701,6 +727,7 @@ void register_blend_functions()
     /* ... Register additional test functions here */
     add_blend_function(&my_blend, my_blend_descr);
     add_blend_function(&my_blend_v2, my_blend_descr_v2);
+    add_blend_function(&my_blend_v3, my_blend_descr_v3);
 }
 
 /******************************************************************************
