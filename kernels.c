@@ -444,6 +444,85 @@ void my_smooth_v2(int dim, pixel *src, pixel *dst)
     }
 }
 
+typedef struct
+{
+    int r, g, b, a;
+} vsum_t;
+
+static inline __attribute__((always_inline)) void put(pixel *o, vsum_t s, int d)
+{
+    o->red = s.r / d;
+    o->green = s.g / d;
+    o->blue = s.b / d;
+    o->alpha = s.a / d;
+}
+
+/* One output row. p0,p1,(p2) are the source rows in the window; nrows is 2 or 3. */
+static inline __attribute__((always_inline)) void smooth_row(int dim, pixel *p0, pixel *p1, pixel *p2, pixel *out,
+                                                             vsum_t *vs, const int nrows)
+{
+    int j;
+    for (j = 0; j < dim; j++) /* vertical pass */
+    {
+        vs[j].r = p0[j].red + p1[j].red + (nrows == 3 ? p2[j].red : 0);
+        vs[j].g = p0[j].green + p1[j].green + (nrows == 3 ? p2[j].green : 0);
+        vs[j].b = p0[j].blue + p1[j].blue + (nrows == 3 ? p2[j].blue : 0);
+        vs[j].a = p0[j].alpha + p1[j].alpha + (nrows == 3 ? p2[j].alpha : 0);
+    }
+    vsum_t w; /* horizontal pass */
+    w.r = vs[0].r + vs[1].r;
+    w.g = vs[0].g + vs[1].g;
+    w.b = vs[0].b + vs[1].b;
+    w.a = vs[0].a + vs[1].a;
+    put(&out[0], w, 2 * nrows); /* left edge: 2 columns */
+
+    w.r += vs[2].r;
+    w.g += vs[2].g;
+    w.b += vs[2].b;
+    w.a += vs[2].a;
+    put(&out[1], w, 3 * nrows);
+
+    for (j = 2; j < dim - 1; j++)
+    {
+        w.r += vs[j + 1].r - vs[j - 2].r;
+        w.g += vs[j + 1].g - vs[j - 2].g;
+        w.b += vs[j + 1].b - vs[j - 2].b;
+        w.a += vs[j + 1].a - vs[j - 2].a;
+        put(&out[j], w, 3 * nrows);
+    }
+    j = dim - 1; /* right edge: 2 columns */
+    w.r -= vs[j - 2].r;
+    w.g -= vs[j - 2].g;
+    w.b -= vs[j - 2].b;
+    w.a -= vs[j - 2].a;
+    put(&out[j], w, 2 * nrows);
+}
+
+/* Smooth output rows [start, end). vs is a scratch array of dim entries. */
+static void smooth_rows(int dim, pixel *src, pixel *dst, int start, int end, vsum_t *vs)
+{
+    int i;
+    for (i = start; i < end; i++)
+    {
+        if (i == 0)
+            smooth_row(dim, src, src + dim, NULL, dst, vs, 2);
+        else if (i == dim - 1)
+            smooth_row(dim, src + (dim - 2) * dim, src + (dim - 1) * dim, NULL,
+                       dst + i * dim, vs, 2);
+        else
+            smooth_row(dim, src + (i - 1) * dim, src + i * dim, src + (i + 1) * dim,
+                       dst + i * dim, vs, 3);
+    }
+}
+
+char my_smooth_descr_v3[] = "constant_divisors: column sums and sliding window";
+void my_smooth_v3(int dim, pixel *src, pixel *dst)
+{
+    vsum_t *vs = malloc(dim * sizeof(vsum_t));
+    smooth_rows(dim, src, dst, 0, dim, vs);
+    free(vs);
+}
+
 /*
  * naive_smooth - The naive baseline version of smooth
  */
@@ -475,6 +554,7 @@ void register_smooth_functions()
     /* ... Register additional test functions here */
     add_smooth_function(&my_smooth, my_smooth_descr);
     add_smooth_function(&my_smooth_v2, my_smooth_descr_v2);
+    add_smooth_function(&my_smooth_v3, my_smooth_descr_v3);
 }
 
 /******************************************************************************
