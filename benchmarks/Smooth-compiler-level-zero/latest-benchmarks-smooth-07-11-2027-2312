@@ -1,0 +1,77 @@
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ make clean
+rm -f driver.o kernels.o blend.o smooth.o fcyc.o clock.o driver core *~ *.o
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ make
+gcc -march=native -Wall -O0 -D __O0__   -c -o driver.o driver.c
+gcc -march=native -Wall -O0 -D __O0__   -c -o kernels.o kernels.c
+gcc -march=native -Wall -O0 -D __O0__   -c -o blend.o blend.c
+gcc -march=native -Wall -O0 -D __O0__   -c -o smooth.o smooth.c
+gcc -march=native -Wall -O0 -D __O0__   -c -o fcyc.o fcyc.c
+gcc -march=native -Wall -O0 -D __O0__   -c -o clock.o clock.c
+gcc -march=native -Wall -O0 -D __O0__ driver.o kernels.o blend.o smooth.o fcyc.o clock.o -lm -o driver
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -o smooth
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Benchmarking smooth...
+Smooth: Version = smooth: Current working version:
+Dim             64      128     256     512     Mean
+Your CPEs       177.0   181.8   187.2   183.6
+Baseline CPEs   60.7    60.8    60.8    60.9
+Speedup         0.3     0.3     0.3     0.3     0.3
+
+Smooth: Version = local_accumulators: avg inlined by hand:
+Dim             64      128     256     512     Mean
+Your CPEs       77.2    78.1    80.4    81.7
+Baseline CPEs   60.7    60.8    60.8    60.9
+Speedup         0.8     0.8     0.8     0.7     0.8
+
+Smooth: Version = interior_border_seperation: interior has a constant divisor 9:
+Dim             64      128     256     512     Mean
+Your CPEs       25.9    24.6    23.8    24.6
+Baseline CPEs   60.7    60.8    60.8    60.9
+Speedup         2.3     2.5     2.6     2.5     2.5
+
+Smooth: Version = constant_divisors: column sums and sliding window:
+Dim             64      128     256     512     Mean
+Your CPEs       69.6    70.4    70.7    72.1
+Baseline CPEs   60.7    60.8    60.8    60.9
+Speedup         0.9     0.9     0.9     0.8     0.9
+
+Summary of Your Best Scores:
+  Smooth:   2.5 (interior_border_seperation: interior has a constant divisor 9)
+
+salc@LAPTOP-HIBQ8KAL:~/Downloads/prflab26$ ./driver -l -o smooth
+Name:  Sander Lahoz Christensen
+Alias: salc
+Email: salc@itu.dk
+
+Large images; this will take a while (esp. if you benchmark many functions).
+
+Benchmarking smooth...
+Smooth: Version = smooth: Current working version:
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       186.4   188.5   189.8   191.9
+Baseline CPEs   61.4    62.1    62.3    62.5
+Speedup         0.3     0.3     0.3     0.3     0.3
+
+Smooth: Version = local_accumulators: avg inlined by hand:
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       83.2    84.1    85.5    87.0
+Baseline CPEs   61.4    62.1    62.3    62.5
+Speedup         0.7     0.7     0.7     0.7     0.7
+
+Smooth: Version = interior_border_seperation: interior has a constant divisor 9:
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       24.2    25.1    25.6    25.9
+Baseline CPEs   61.4    62.1    62.3    62.5
+Speedup         2.5     2.5     2.4     2.4     2.5
+
+Smooth: Version = constant_divisors: column sums and sliding window:
+Dim             1024    2048    4096    8192    Mean
+Your CPEs       71.4    72.9    73.3    73.7
+Baseline CPEs   61.4    62.1    62.3    62.5
+Speedup         0.9     0.9     0.8     0.8     0.9
+
+Summary of Your Best Scores:
+  Smooth:   2.5 (interior_border_seperation: interior has a constant divisor 9)
