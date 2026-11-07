@@ -603,10 +603,19 @@ void my_smooth_n(int dim, pixel *src, pixel *dst)
         pthread_join(tid[t], NULL);
 }
 
+char my_smooth_n_descr_v2[] = "optimize_small_images: for small N single threaded, threaded for large N";
+void my_smooth_n_v2(int dim, pixel *src, pixel *dst)
+{
+    if (dim < 256)
+        my_smooth_v3(dim, src, dst);
+    else
+        my_smooth_n(dim, src, dst);
+}
+
 char smooth_n_descr[] = "smooth_n: Current working version";
 void smooth_n(int dim, pixel *src, pixel *dst)
 {
-    naive_smooth(dim, src, dst);
+    my_smooth_n_v2(dim, src, dst);
 }
 
 /*
@@ -619,6 +628,7 @@ void register_smooth_n_functions()
     add_smooth_n_function(&smooth_n, smooth_n_descr);
     /* ... Register additional test functions here */
     add_smooth_n_function(&my_smooth_n, my_smooth_n_descr);
+    add_smooth_n_function(&my_smooth_n_v2, my_smooth_n_descr_v2);
 }
 
 /******************************************************************************
